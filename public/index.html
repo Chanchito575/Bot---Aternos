@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Server Manager Panel</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background-color: #1e293b;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #38bdf8; }
+    .status-box {
+      background: #0f172a;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    .status-item { display: flex; justify-content: space-between; margin: 0.5rem 0; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+    .badge-on { background: #22c55e; color: #000; }
+    .badge-off { background: #ef4444; color: #fff; }
+    .switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #334155;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #475569; transition: .4s; border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
+      background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #f59e0b; }
+    input:checked + .slider:before { transform: translateX(26px); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚙️ Panel de Control Server</h1>
+    <div class="status-box">
+      <div class="status-item">
+        <span>Estado Bots:</span>
+        <span class="badge badge-on" id="botsStatus">2 Conectados</span>
+      </div>
+      <div class="status-item">
+        <span>Zona Celda:</span>
+        <span style="color: #94a3b8;">X:-10..10 Z:-10..10</span>
+      </div>
+    </div>
+
+    <div class="switch-container">
+      <span style="font-weight: 600;">Modo Mantenimiento</span>
+      <label class="switch">
+        <input type="checkbox" id="mantenimientoToggle" onchange="toggleMantenimiento(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <script>
+    async function loadStatus() {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      document.getElementById('mantenimientoToggle').checked = data.mantenimiento;
+    }
+
+    async function toggleMantenimiento(value) {
+      await fetch('/api/mantenimiento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: value })
+      });
+    }
+
+    loadStatus();
+  </script>
+</body>
+</html>
