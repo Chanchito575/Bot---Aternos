@@ -3,10 +3,8 @@ const fs = require('fs');
 
 const HOST = process.env.SERVER_IP || 'TU_IP.aternos.me';
 const PORT = parseInt(process.env.SERVER_PORT) || 19132;
-const BOT_NAME = process.env.BOT1_NAME || 'Bot_AFK_1';
 const TARGET_BOT = process.env.BOT2_NAME || 'Bot_AFK_2';
 
-// Configuración de límites de la celda de Bedrock
 const AREA = { minX: -10, maxX: 10, minY: -61, maxY: -53, minZ: -10, maxZ: 10 };
 
 function getRandomCoord(min, max) {
@@ -30,24 +28,31 @@ function resetErroresConexion() {
 }
 
 function connectBot() {
-  console.log(`[${BOT_NAME}] Conectando...`);
+  console.log('[Bot_AFK_1] Iniciando conexión con Microsoft Auth...');
 
   const client = bedrock.createClient({
     host: HOST,
     port: PORT,
-    username: BOT_NAME,
-    offline: true
+    // Autenticación oficial de Microsoft
+    authTitle: '0000000048248239', // Title ID estándar para Minecraft Bedrock
+    onMsaCode: (data) => {
+      console.log('==================================================');
+      console.log('[BOT 1 - AUTORIZACIÓN MICROSOFT]');
+      console.log(`Entra a: ${data.verification_uri}`);
+      console.log(`Escribe el código: ${data.user_code}`);
+      console.log('==================================================');
+    }
   });
 
   client.on('spawn', () => {
-    console.log(`[${BOT_NAME}] ¡En línea!`);
+    console.log('[Bot_AFK_1] ¡En línea y autenticado!');
     resetErroresConexion();
 
     setTimeout(() => {
       const startX = getRandomCoord(AREA.minX, AREA.maxX);
       const startZ = getRandomCoord(AREA.minZ, AREA.maxZ);
       client.queue('command_request', {
-        command: `/tp ${BOT_NAME} ${startX} -55 ${startZ}`,
+        command: `/tp @s ${startX} -55 ${startZ}`,
         origin: { type: 'player', uuid: client.uuid || '', request_id: '' },
         internal: false
       });
@@ -61,7 +66,6 @@ function connectBot() {
 }
 
 function startLoop(client) {
-  // Movimiento aleatorio en la zona cada 20s
   setInterval(() => {
     const targetX = getRandomCoord(AREA.minX, AREA.maxX);
     const targetZ = getRandomCoord(AREA.minZ, AREA.maxZ);
@@ -73,7 +77,6 @@ function startLoop(client) {
     });
   }, 20000);
 
-  // Mensaje de estado por /msg
   setInterval(() => {
     const msgs = ["¡Trabajando 24/7!", "Manteniendo el server vivo", "Turno de guardia"];
     const msg = msgs[Math.floor(Math.random() * msgs.length)];
@@ -84,13 +87,11 @@ function startLoop(client) {
     });
   }, 22000);
 
-  // Clic aleatorio (izq/der) cada 25s
   setInterval(() => {
     const action = Math.random() > 0.5 ? 1 : 2;
     client.queue('animate', { action_id: action, runtime_entity_id: client.entityId });
   }, 25000);
 
-  // Rotación de cámara cada 15s
   setInterval(() => {
     client.queue('player_auth_input', {
       pitch: Math.floor(Math.random() * 40) - 20,
@@ -104,7 +105,7 @@ function startLoop(client) {
 
 function reconnect() {
   incrementarErrorConexion();
-  console.log(`[${BOT_NAME}] Error/Desconexión. Reintentando en 15s...`);
+  console.log('[Bot_AFK_1] Desconectado. Reintentando en 15s...');
   setTimeout(connectBot, 15000);
 }
 
