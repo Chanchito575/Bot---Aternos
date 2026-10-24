@@ -1,7 +1,7 @@
 const bedrock = require('bedrock-protocol');
 const fs = require('fs');
 
-const HOST = process.env.SERVER_IP || 'TU_IP.aternos.me';
+const HOST = process.env.SERVER_IP || 'Zenit-Beta.aternos.me';
 const PORT = parseInt(process.env.SERVER_PORT) || 19132;
 const TARGET_BOT = process.env.BOT2_NAME || 'Bot_AFK_2';
 
@@ -33,8 +33,7 @@ function connectBot() {
   const client = bedrock.createClient({
     host: HOST,
     port: PORT,
-    // Autenticación oficial de Microsoft
-    authTitle: '0000000048248239', // Title ID estándar para Minecraft Bedrock
+    profilesFolder: './controls', // Guarda el token para no pedir login siempre
     onMsaCode: (data) => {
       console.log('==================================================');
       console.log('[BOT 1 - AUTORIZACIÓN MICROSOFT]');
@@ -61,8 +60,15 @@ function connectBot() {
     startLoop(client);
   });
 
-  client.on('kick', () => reconnect());
-  client.on('error', () => reconnect());
+  client.on('kick', (reason) => {
+    console.log('[Bot_AFK_1] Expulsado:', reason);
+    reconnect();
+  });
+  
+  client.on('error', (err) => {
+    console.log('[Bot_AFK_1] Error:', err.message);
+    reconnect();
+  });
 }
 
 function startLoop(client) {
@@ -91,16 +97,6 @@ function startLoop(client) {
     const action = Math.random() > 0.5 ? 1 : 2;
     client.queue('animate', { action_id: action, runtime_entity_id: client.entityId });
   }, 25000);
-
-  setInterval(() => {
-    client.queue('player_auth_input', {
-      pitch: Math.floor(Math.random() * 40) - 20,
-      yaw: Math.floor(Math.random() * 360),
-      position: { x: 0, y: -55, z: 0 },
-      move_vector: { x: 0, z: 0 }, head_yaw: 0, input_data: 0,
-      input_mode: 'touch', play_mode: 'normal'
-    });
-  }, 15000);
 }
 
 function reconnect() {
