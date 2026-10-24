@@ -1,9 +1,12 @@
 const bedrock = require('bedrock-protocol');
 const fs = require('fs');
+const http = require('http');
 
-const HOST = process.env.SERVER_IP || 'Zenit-Beta.aternos.me';
-const PORT = parseInt(process.env.SERVER_PORT) || 19132;
-const TARGET_BOT = process.env.BOT2_NAME || 'elpapu3196';
+// Configuración directa de IP y puerto
+const HOST = '1.26.50.5';
+const PORT = 45026;
+const TARGET_BOT = 'elpapu3196';
+const BOT_ID = 'bot1';
 
 const AREA = { minX: -10, maxX: 10, minY: -61, maxY: -53, minZ: -10, maxZ: 10 };
 
@@ -11,28 +14,22 @@ function getRandomCoord(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function incrementarErrorConexion() {
-  if (fs.existsSync('status.json')) {
-    try {
-      const data = JSON.parse(fs.readFileSync('status.json'));
-      data.erroresConexion = (data.erroresConexion || 0) + 1;
-      fs.writeFileSync('status.json', JSON.stringify(data, null, 2));
-    } catch (e) {
-      console.log('[Bot_AFK_1] Error leyendo status.json:', e.message);
+// Función para reportar estado real al servidor web
+function notifyStatus(statusName) {
+  const data = JSON.stringify({ botId: BOT_ID, status: statusName });
+  const req = http.request({
+    hostname: 'localhost',
+    port: process.env.PORT || 10000,
+    path: '/api/update-bot',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length
     }
-  }
-}
-
-function resetErroresConexion() {
-  if (fs.existsSync('status.json')) {
-    try {
-      const data = JSON.parse(fs.readFileSync('status.json'));
-      data.erroresConexion = 0;
-      fs.writeFileSync('status.json', JSON.stringify(data, null, 2));
-    } catch (e) {
-      console.log('[Bot_AFK_1] Error reiniciando status.json:', e.message);
-    }
-  }
+  });
+  req.on('error', () => {}); // Silenciar errores si el servidor web está iniciando
+  req.write(data);
+  req.end();
 }
 
 function connectBot() {
@@ -53,7 +50,7 @@ function connectBot() {
 
   client.on('spawn', () => {
     console.log('[Bot_AFK_1] ¡En línea y autenticado!');
-    resetErroresConexion();
+    notifyStatus('online');
 
     setTimeout(() => {
       const startX = getRandomCoord(AREA.minX, AREA.maxX);
@@ -70,12 +67,13 @@ function connectBot() {
 
   client.on('kick', (reason) => {
     console.log('[Bot_AFK_1] Expulsado:', reason);
+    notifyStatus('offline');
     reconnect();
   });
   
-  // Atrapamos los errores de red para evitar que Render crashee
   client.on('error', (err) => {
     console.log('[Bot_AFK_1] Error de red (atrapado para evitar reinicio):', err.message);
+    notifyStatus('offline');
     reconnect();
   });
 }
@@ -93,8 +91,9 @@ function startLoop(client) {
     });
   }, 20000);
 
-  // Bucle de chat (Usa comillas dobles "${TARGET_BOT}" por si el objetivo tiene espacios)
+  // Bucle de chat y reporte de vida al panel web
   setInterval(() => {
+    notifyStatus('online');
     const msgs = ["¡Trabajando 24/7!", "Manteniendo el server vivo", "Turno de guardia"];
     const msg = msgs[Math.floor(Math.random() * msgs.length)];
     client.queue('command_request', {
@@ -112,7 +111,6 @@ function startLoop(client) {
 }
 
 function reconnect() {
-  incrementarErrorConexion();
   console.log('[Bot_AFK_1] Desconectado. Reintentando en 15s...');
   setTimeout(connectBot, 15000);
 }
