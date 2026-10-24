@@ -1,9 +1,8 @@
 const bedrock = require('bedrock-protocol');
-const fs = require('fs');
 const http = require('http');
 
-// Configuración directa de IP y puerto
-const HOST = '1.26.50.5';
+// Configuración directa basada en tu servidor Aternos
+const HOST = 'Zenit-Beta.aternos.me';
 const PORT = 45026;
 const TARGET_BOT = 'elpapu3196';
 const BOT_ID = 'bot1';
@@ -38,6 +37,7 @@ function connectBot() {
   const client = bedrock.createClient({
     host: HOST,
     port: PORT,
+    skipPing: true, // OBLIGATORIO: Evita el timeout inicial en Render
     profilesFolder: './controls',
     onMsaCode: (data) => {
       console.log('==================================================');
@@ -72,7 +72,7 @@ function connectBot() {
   });
   
   client.on('error', (err) => {
-    console.log('[Bot_AFK_1] Error de red (atrapado para evitar reinicio):', err.message);
+    console.log('[Bot_AFK_1] Error de red:', err.message);
     notifyStatus('offline');
     reconnect();
   });
