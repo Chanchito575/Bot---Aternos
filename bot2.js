@@ -3,7 +3,6 @@ const fs = require('fs');
 
 const HOST = process.env.SERVER_IP || 'TU_IP.aternos.me';
 const PORT = parseInt(process.env.SERVER_PORT) || 19132;
-const BOT_NAME = process.env.BOT2_NAME || 'Bot_AFK_2';
 const TARGET_BOT = process.env.BOT1_NAME || 'Bot_AFK_1';
 
 const AREA = { minX: -10, maxX: 10, minY: -61, maxY: -53, minZ: -10, maxZ: 10 };
@@ -13,23 +12,29 @@ function getRandomCoord(min, max) {
 }
 
 function connectBot() {
-  console.log(`[${BOT_NAME}] Conectando...`);
+  console.log('[Bot_AFK_2] Iniciando conexión con Microsoft Auth...');
 
   const client = bedrock.createClient({
     host: HOST,
     port: PORT,
-    username: BOT_NAME,
-    offline: true
+    authTitle: '0000000048248239',
+    onMsaCode: (data) => {
+      console.log('==================================================');
+      console.log('[BOT 2 - AUTORIZACIÓN MICROSOFT]');
+      console.log(`Entra a: ${data.verification_uri}`);
+      console.log(`Escribe el código: ${data.user_code}`);
+      console.log('==================================================');
+    }
   });
 
   client.on('spawn', () => {
-    console.log(`[${BOT_NAME}] ¡En línea!`);
+    console.log('[Bot_AFK_2] ¡En línea y autenticado!');
 
     setTimeout(() => {
       const startX = getRandomCoord(AREA.minX, AREA.maxX);
       const startZ = getRandomCoord(AREA.minZ, AREA.maxZ);
       client.queue('command_request', {
-        command: `/tp ${BOT_NAME} ${startX} -55 ${startZ}`,
+        command: `/tp @s ${startX} -55 ${startZ}`,
         origin: { type: 'player', uuid: client.uuid || '', request_id: '' },
         internal: false
       });
