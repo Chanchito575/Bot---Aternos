@@ -3,105 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft Server Manager Panel</title>
+  <title>Zenit Beta - Bot Manager 24/7</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
     body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      margin: 0;
+      padding: 20px;
     }
-    .card {
-      background-color: #1e293b;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    .container {
       width: 100%;
-      max-width: 420px;
+      max-width: 600px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .header {
       text-align: center;
+      margin-bottom: 24px;
     }
-    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #38bdf8; }
-    .status-box {
-      background: #0f172a;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-      text-align: left;
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #f0f6fc;
+      letter-spacing: -0.5px;
     }
-    .status-item { display: flex; justify-content: space-between; margin: 0.5rem 0; }
-    .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
-    .badge-on { background: #22c55e; color: #000; }
-    .badge-off { background: #ef4444; color: #fff; }
-    .switch-container {
+    .header p {
+      font-size: 0.9rem;
+      color: #8b949e;
+      margin-top: 4px;
+    }
+    .server-badge {
+      display: inline-block;
+      background: #21262d;
+      border: 1px solid #30363d;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-top: 10px;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    @media (max-width: 480px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+    .bot-card {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+    .bot-card:hover {
+      transform: translateY(-2px);
+    }
+    .bot-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f0f6fc;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #334155;
     }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #475569; transition: .4s; border-radius: 34px;
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #8b949e;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
     }
-    .slider:before {
-      position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
-      background-color: white; transition: .4s; border-radius: 50%;
+    .online .dot {
+      background-color: #3fb950;
+      box-shadow: 0 0 10px #3fb950;
+      animation: pulse 2s infinite;
     }
-    input:checked + .slider { background-color: #f59e0b; }
-    input:checked + .slider:before { transform: translateX(26px); }
+    .offline .dot {
+      background-color: #f85149;
+      box-shadow: 0 0 8px #f85149;
+    }
+    .online .status-text { color: #3fb950; }
+    .offline .status-text { color: #f85149; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(63, 185, 80, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #8b949e;
+      border-top: 1px solid #21262d;
+      padding-top: 16px;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>⚙️ Panel de Control Server</h1>
-    <div class="status-box">
-      <div class="status-item">
-        <span>Estado Bots:</span>
-        <span class="badge badge-on" id="botsStatus">2 Conectados</span>
+  <div class="container">
+    <div class="header">
+      <h1>Panel de Control 24/7</h1>
+      <p>Monitoreo en tiempo real para Aternos</p>
+      <div class="server-badge" id="serverIp">1.26.50.5:45026</div>
+    </div>
+
+    <div class="cards-grid">
+      <!-- Bot 1 -->
+      <div class="bot-card" id="card-bot1">
+        <div class="bot-title">
+          <span>Chino 2334</span>
+        </div>
+        <div class="status-indicator offline" id="status-bot1">
+          <div class="dot"></div>
+          <span class="status-text">Desconectado</span>
+        </div>
       </div>
-      <div class="status-item">
-        <span>Zona Celda:</span>
-        <span style="color: #94a3b8;">X:-10..10 Z:-10..10</span>
+
+      <!-- Bot 2 -->
+      <div class="bot-card" id="card-bot2">
+        <div class="bot-title">
+          <span>elpapu3196</span>
+        </div>
+        <div class="status-indicator offline" id="status-bot2">
+          <div class="dot"></div>
+          <span class="status-text">Desconectado</span>
+        </div>
       </div>
     </div>
 
-    <div class="switch-container">
-      <span style="font-weight: 600;">Modo Mantenimiento</span>
-      <label class="switch">
-        <input type="checkbox" id="mantenimientoToggle" onchange="toggleMantenimiento(this.checked)">
-        <span class="slider"></span>
-      </label>
+    <div class="footer">
+      Sincronizado dinámicamente cada 5 segundos • UptimeRobot Ready
     </div>
   </div>
 
   <script>
-    async function loadStatus() {
-      const res = await fetch('/api/status');
-      const data = await res.json();
-      document.getElementById('mantenimientoToggle').checked = data.mantenimiento;
+    async function updateDashboard() {
+      try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+
+        // Actualizar Bot 1
+        updateBotUI('bot1', data.bot1);
+        // Actualizar Bot 2
+        updateBotUI('bot2', data.bot2);
+
+      } catch (err) {
+        console.error('Error obteniendo estado:', err);
+      }
     }
 
-    async function toggleMantenimiento(value) {
-      await fetch('/api/mantenimiento', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estado: value })
-      });
+    function updateBotUI(botKey, botData) {
+      if (!botData) return;
+      const statusElement = document.getElementById(`status-${botKey}`);
+      const isOnline = botData.status === 'online';
+
+      if (isOnline) {
+        statusElement.className = 'status-indicator online';
+        statusElement.querySelector('.status-text').textContent = 'En línea';
+      } else {
+        statusElement.className = 'status-indicator offline';
+        statusElement.querySelector('.status-text').textContent = 'Desconectado';
+      }
     }
 
-    loadStatus();
+    // Actualizar inmediatamente y luego cada 5 segundos
+    updateDashboard();
+    setInterval(updateDashboard, 5000);
   </script>
 </body>
 </html>
