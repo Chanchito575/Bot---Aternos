@@ -1,13 +1,34 @@
 const bedrock = require('bedrock-protocol');
+const http = require('http');
 
-const HOST = process.env.SERVER_IP || 'Zenit-Beta.aternos.me';
-const PORT = parseInt(process.env.SERVER_PORT) || 19132;
-const TARGET_BOT = process.env.BOT1_NAME || 'Chino 2334';
+// Configuración directa de IP y puerto
+const HOST = '1.26.50.5';
+const PORT = 45026;
+const TARGET_BOT = 'Chino 2334';
+const BOT_ID = 'bot2';
 
 const AREA = { minX: -10, maxX: 10, minY: -61, maxY: -53, minZ: -10, maxZ: 10 };
 
 function getRandomCoord(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Función para reportar estado real al servidor web
+function notifyStatus(statusName) {
+  const data = JSON.stringify({ botId: BOT_ID, status: statusName });
+  const req = http.request({
+    hostname: 'localhost',
+    port: process.env.PORT || 10000,
+    path: '/api/update-bot',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length
+    }
+  });
+  req.on('error', () => {}); // Silenciar errores si el servidor web está iniciando
+  req.write(data);
+  req.end();
 }
 
 function connectBot() {
@@ -28,6 +49,7 @@ function connectBot() {
 
   client.on('spawn', () => {
     console.log('[Bot_AFK_2] ¡En línea y autenticado!');
+    notifyStatus('online');
 
     setTimeout(() => {
       const startX = getRandomCoord(AREA.minX, AREA.maxX);
@@ -44,12 +66,13 @@ function connectBot() {
 
   client.on('kick', (reason) => {
     console.log('[Bot_AFK_2] Expulsado:', reason);
+    notifyStatus('offline');
     reconnect();
   });
   
-  // Atrapamos los errores de red para evitar que Render crashee
   client.on('error', (err) => {
     console.log('[Bot_AFK_2] Error de red (atrapado para evitar reinicio):', err.message);
+    notifyStatus('offline');
     reconnect();
   });
 }
@@ -67,8 +90,9 @@ function startLoop(client) {
     });
   }, 20000);
 
-  // Bucle de chat (Usa comillas dobles "${TARGET_BOT}" para aceptar espacios como "Chino 2334")
+  // Bucle de chat y reporte de vida al panel web (Con comillas para proteger el espacio del nombre)
   setInterval(() => {
+    notifyStatus('online');
     client.queue('command_request', {
       command: `/msg "${TARGET_BOT}" ¡Sistema estable 24/7!`,
       origin: { type: 'player', uuid: client.uuid || '', request_id: '' },
