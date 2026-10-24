@@ -1,9 +1,8 @@
 const bedrock = require('bedrock-protocol');
-const fs = require('fs');
 
 const HOST = process.env.SERVER_IP || 'Zenit-Beta.aternos.me';
 const PORT = parseInt(process.env.SERVER_PORT) || 19132;
-const TARGET_BOT = process.env.BOT2_NAME || 'elpapu3196';
+const TARGET_BOT = process.env.BOT1_NAME || 'Chino 2334';
 
 const AREA = { minX: -10, maxX: 10, minY: -61, maxY: -53, minZ: -10, maxZ: 10 };
 
@@ -11,32 +10,8 @@ function getRandomCoord(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function incrementarErrorConexion() {
-  if (fs.existsSync('status.json')) {
-    try {
-      const data = JSON.parse(fs.readFileSync('status.json'));
-      data.erroresConexion = (data.erroresConexion || 0) + 1;
-      fs.writeFileSync('status.json', JSON.stringify(data, null, 2));
-    } catch (e) {
-      console.log('[Bot_AFK_1] Error leyendo status.json:', e.message);
-    }
-  }
-}
-
-function resetErroresConexion() {
-  if (fs.existsSync('status.json')) {
-    try {
-      const data = JSON.parse(fs.readFileSync('status.json'));
-      data.erroresConexion = 0;
-      fs.writeFileSync('status.json', JSON.stringify(data, null, 2));
-    } catch (e) {
-      console.log('[Bot_AFK_1] Error reiniciando status.json:', e.message);
-    }
-  }
-}
-
 function connectBot() {
-  console.log('[Bot_AFK_1] Iniciando conexión con Microsoft Auth...');
+  console.log('[Bot_AFK_2] Iniciando conexión con Microsoft Auth...');
 
   const client = bedrock.createClient({
     host: HOST,
@@ -44,7 +19,7 @@ function connectBot() {
     profilesFolder: './controls',
     onMsaCode: (data) => {
       console.log('==================================================');
-      console.log('[BOT 1 - AUTORIZACIÓN MICROSOFT]');
+      console.log('[BOT 2 - AUTORIZACIÓN MICROSOFT]');
       console.log(`Entra a: ${data.verification_uri}`);
       console.log(`Escribe el código: ${data.user_code}`);
       console.log('==================================================');
@@ -52,8 +27,7 @@ function connectBot() {
   });
 
   client.on('spawn', () => {
-    console.log('[Bot_AFK_1] ¡En línea y autenticado!');
-    resetErroresConexion();
+    console.log('[Bot_AFK_2] ¡En línea y autenticado!');
 
     setTimeout(() => {
       const startX = getRandomCoord(AREA.minX, AREA.maxX);
@@ -69,13 +43,13 @@ function connectBot() {
   });
 
   client.on('kick', (reason) => {
-    console.log('[Bot_AFK_1] Expulsado:', reason);
+    console.log('[Bot_AFK_2] Expulsado:', reason);
     reconnect();
   });
   
   // Atrapamos los errores de red para evitar que Render crashee
   client.on('error', (err) => {
-    console.log('[Bot_AFK_1] Error de red (atrapado para evitar reinicio):', err.message);
+    console.log('[Bot_AFK_2] Error de red (atrapado para evitar reinicio):', err.message);
     reconnect();
   });
 }
@@ -93,16 +67,14 @@ function startLoop(client) {
     });
   }, 20000);
 
-  // Bucle de chat (Usa comillas dobles "${TARGET_BOT}" por si el objetivo tiene espacios)
+  // Bucle de chat (Usa comillas dobles "${TARGET_BOT}" para aceptar espacios como "Chino 2334")
   setInterval(() => {
-    const msgs = ["¡Trabajando 24/7!", "Manteniendo el server vivo", "Turno de guardia"];
-    const msg = msgs[Math.floor(Math.random() * msgs.length)];
     client.queue('command_request', {
-      command: `/msg "${TARGET_BOT}" ${msg}`,
+      command: `/msg "${TARGET_BOT}" ¡Sistema estable 24/7!`,
       origin: { type: 'player', uuid: client.uuid || '', request_id: '' },
       internal: false
     });
-  }, 22000);
+  }, 24000);
 
   // Bucle de animación
   setInterval(() => {
@@ -112,8 +84,7 @@ function startLoop(client) {
 }
 
 function reconnect() {
-  incrementarErrorConexion();
-  console.log('[Bot_AFK_1] Desconectado. Reintentando en 15s...');
+  console.log('[Bot_AFK_2] Desconectado. Reintentando en 15s...');
   setTimeout(connectBot, 15000);
 }
 
