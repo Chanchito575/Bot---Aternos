@@ -1,8 +1,8 @@
 const bedrock = require('bedrock-protocol');
 const http = require('http');
 
-const HOST = 'Zenit-Beta.aternos.me';
-const PORT = 45026;
+const HOST = 'tapetail.aternos.host';
+const PORT = 19132;
 const TARGET_BOT = 'elpapu3196';
 const BOT_ID = 'bot1';
 
