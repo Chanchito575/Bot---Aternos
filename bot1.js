@@ -2,7 +2,7 @@ const bedrock = require('bedrock-protocol');
 const fs = require('fs');
 
 const HOST = process.env.SERVER_IP || 'Zenit-Beta.aternos.me';
-const PORT = parseInt(process.env.SERVER_PORT) || 19132;
+const PORT = parseInt(process.env.SERVER_PORT) || 45026;
 const TARGET_BOT = process.env.BOT2_NAME || 'Bot_AFK_2';
 
 const AREA = { minX: -10, maxX: 10, minY: -61, maxY: -53, minZ: -10, maxZ: 10 };
