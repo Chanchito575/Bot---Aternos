@@ -1,7 +1,6 @@
 const bedrock = require('bedrock-protocol');
 const http = require('http');
 
-// Configuración directa basada en tu servidor Aternos
 const HOST = 'Zenit-Beta.aternos.me';
 const PORT = 45026;
 const TARGET_BOT = 'elpapu3196';
@@ -13,7 +12,6 @@ function getRandomCoord(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Función para reportar estado real al servidor web
 function notifyStatus(statusName) {
   const data = JSON.stringify({ botId: BOT_ID, status: statusName });
   const req = http.request({
@@ -26,18 +24,18 @@ function notifyStatus(statusName) {
       'Content-Length': data.length
     }
   });
-  req.on('error', () => {}); // Silenciar errores si el servidor web está iniciando
+  req.on('error', () => {});
   req.write(data);
   req.end();
 }
 
 function connectBot() {
-  console.log('[Bot_AFK_1] Iniciando conexión con Microsoft Auth...');
+  console.log('[Bot_AFK_1] Conectando a Aternos con NetherNet...');
 
   const client = bedrock.createClient({
     host: HOST,
     port: PORT,
-    skipPing: true, // OBLIGATORIO: Evita el timeout inicial en Render
+    skipPing: true,
     profilesFolder: './controls',
     onMsaCode: (data) => {
       console.log('==================================================');
@@ -55,9 +53,12 @@ function connectBot() {
     setTimeout(() => {
       const startX = getRandomCoord(AREA.minX, AREA.maxX);
       const startZ = getRandomCoord(AREA.minZ, AREA.maxZ);
+      
+      const safeUuid = client.uuid ? String(client.uuid) : '00000000-0000-0000-0000-000000000000';
+      
       client.queue('command_request', {
         command: `/tp @s ${startX} -55 ${startZ}`,
-        origin: { type: 'player', uuid: client.uuid || '', request_id: '' },
+        origin: { type: 'player', uuid: safeUuid, request_id: '1' },
         internal: false
       });
     }, 3000);
@@ -79,7 +80,6 @@ function connectBot() {
 }
 
 function startLoop(client) {
-  // Bucle de movimiento
   setInterval(() => {
     const targetX = getRandomCoord(AREA.minX, AREA.maxX);
     const targetZ = getRandomCoord(AREA.minZ, AREA.maxZ);
@@ -91,27 +91,28 @@ function startLoop(client) {
     });
   }, 20000);
 
-  // Bucle de chat y reporte de vida al panel web
   setInterval(() => {
     notifyStatus('online');
+    const safeUuid = client.uuid ? String(client.uuid) : '00000000-0000-0000-0000-000000000000';
     const msgs = ["¡Trabajando 24/7!", "Manteniendo el server vivo", "Turno de guardia"];
     const msg = msgs[Math.floor(Math.random() * msgs.length)];
+    
     client.queue('command_request', {
       command: `/msg "${TARGET_BOT}" ${msg}`,
-      origin: { type: 'player', uuid: client.uuid || '', request_id: '' },
+      origin: { type: 'player', uuid: safeUuid, request_id: '2' },
       internal: false
     });
   }, 22000);
 
-  // Bucle de animación
   setInterval(() => {
     const action = Math.random() > 0.5 ? 1 : 2;
-    client.queue('animate', { action_id: action, runtime_entity_id: client.entityId });
+    const safeEntityId = client.entityId !== undefined ? client.entityId : 1;
+    client.queue('animate', { action_id: action, runtime_entity_id: safeEntityId });
   }, 25000);
 }
 
 function reconnect() {
-  console.log('[Bot_AFK_1] Desconectado. Reintentando en 15s...');
+  console.log('[Bot_AFK_1] Reintentando en 15s...');
   setTimeout(connectBot, 15000);
 }
 
